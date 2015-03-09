@@ -14,13 +14,13 @@ import java.util.ArrayList;
  */
 public class NewCryptoAlgorithm {
     // Atribut
-    public static StringBuilder plainText;
-    public static StringBuilder cipherText;
-    public static StringBuilder binary;       // Menampung plainText dalam bentuk bit
-    public static ArrayList<ArrayList<StringBuilder>> container16;  // Untuk menampung 16 blok plaintext awal
-    public static int first_idx, last_idx;
+    public StringBuilder plainText;
+    public StringBuilder cipherText;
+    public StringBuilder binary;       // Menampung plainText dalam bentuk bit
+    public ArrayList<ArrayList<StringBuilder>> container16;  // Untuk menampung 16 blok plaintext awal
+    public int first_idx, last_idx;
     
-    NewCryptoAlgorithm() {
+    public NewCryptoAlgorithm() {
         plainText = new StringBuilder();
         cipherText = new StringBuilder();
         container16 = new ArrayList<ArrayList<StringBuilder>>();
@@ -29,12 +29,7 @@ public class NewCryptoAlgorithm {
         last_idx = plainText.length()-1;
     }
     
-    public static void main(String[] args) {
-        ConvertToBinaryString();
-        get16block();
-    }
-    
-    public static void ConvertToBinaryString () {
+    public void ConvertToBinaryString () {
         byte[] b = plainText.toString().getBytes();
         for (byte b1 : b) {
             int val = b1;
@@ -45,7 +40,7 @@ public class NewCryptoAlgorithm {
         }
     }
     
-    public static StringBuilder get8BitForward () {
+    public StringBuilder get8BitForward () {
     // Ambil 8 bit secara maju dari idx yang dikembalikan melalui stringBuilder
         StringBuilder result = new StringBuilder();
         for (int i=0; i<8; i++) {
@@ -55,7 +50,7 @@ public class NewCryptoAlgorithm {
         return result;
     }
     
-    public static StringBuilder get8BitBackward () {
+    public StringBuilder get8BitBackward () {
     // Ambil 8 bit secara mundur ke belakang dari idx yang dikembalikan melalui stringBuilder
         StringBuilder result = new StringBuilder();
         for (int i=0; i<8; i++) {
@@ -65,7 +60,7 @@ public class NewCryptoAlgorithm {
         return result;
     }
     
-    public static void get16block() {
+    public void get16block() {
         int i = 0;
         int j = 0;
         int idx = 0;
@@ -78,6 +73,50 @@ public class NewCryptoAlgorithm {
                     container16.get(i).get(j).append(get8BitForward());
                 else
                     container16.get(i).get(j).append(get8BitBackward());
+                j++;
+            }
+            i++;
+        }
+    }
+    
+    public void barisToKolom() {
+    // Mengubah container16 baris-barisnya menjadi kolom
+        ArrayList<ArrayList<StringBuilder>> temp = new ArrayList<ArrayList<StringBuilder>>();
+        int i =0 ,j=0;
+        while (i<4) {
+            i = 0;
+            while (j<4) {
+                if (j>3)
+                    j=0;
+                temp.get(j).get(i).append(container16.get(i).get(j).toString());
+                container16.get(i).get(j).setLength(0);
+                j++;
+            }
+            i++;
+        }
+        i = 0; j = 0;
+        while (i<4) {
+            i = 0;
+            while (j<4) {
+                if (j>3)
+                    j=0;
+                container16.get(i).get(j).append(temp.get(i).get(j).toString());
+                j++;
+            }
+            i++;
+        }
+    }
+    
+    public void printContainer16() {
+        int i =0 ,j=0;
+        while (i<4) {
+            i = 0;
+            while (j<4) {
+                if (j>3) {
+                    j=0;
+                    System.out.println("");
+                }
+                System.out.print(container16.get(i).get(j).toString()+"\t");
                 j++;
             }
             i++;
