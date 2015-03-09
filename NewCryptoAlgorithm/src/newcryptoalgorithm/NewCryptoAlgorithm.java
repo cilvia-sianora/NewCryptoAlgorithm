@@ -31,6 +31,7 @@ public class NewCryptoAlgorithm {
     public NewCryptoAlgorithm() {
         plainText = new StringBuilder();
         cipherText = new StringBuilder();
+		key = new StringBuilder();
         container16 = new ArrayList<ArrayList<StringBuilder>>();
         binary = new StringBuilder();
         first_idx = 0;
@@ -155,8 +156,10 @@ public class NewCryptoAlgorithm {
 	// return the result of box permutation with S-BOX
 	public StringBuilder[] permutation(StringBuilder[] box){
 		StringBuilder[] result = new StringBuilder[SIZE];
-		for(int i=0;i<SIZE;i++)
-			result[sBox.get(i)] = box[i];
+		for(int i=0;i<SIZE;i++){
+			result[i] = new StringBuilder();
+			result[i] = box[sBox.get(i)];
+		}
 		return result;
 	}
 	
@@ -167,11 +170,30 @@ public class NewCryptoAlgorithm {
 	
 	// make the substitution matrix based on our algorithm
 	public void makeSubstitutionMatrix(){
+		// inisialization
 		StringBuilder[] K = new StringBuilder[SIZE];
 		StringBuilder[] Ka = new StringBuilder[SIZE];
+		StringBuilder binaryKey = new StringBuilder();
+		for(int i=0;i<SIZE;i++){
+			K[i] = new StringBuilder();
+			Ka[i] = new StringBuilder();
+		}
 		
-		// TODO : bagi key jadi 16 bagian trus masukin K
+		// change key to binary string
+		binaryKey = convertToBinaryString(key);
 		
+		// divide the key into 16 parts
+		for(int i=0;i<SIZE;i++){
+			K[i].append(binaryKey.substring(0,8));
+			binaryKey.delete(0,8);
+		}
+		
+		// do the permutation
 		Ka = permutation(K);
+//		for(int i=0;i<SIZE;i++){
+//			//System.out.println(K[i]);
+//			System.out.println(Ka[i]);
+//			//System.out.println(sBox.get(i));
+//		}
 	}
 }
