@@ -18,15 +18,15 @@ public class NewCryptoAlgorithm {
     public static StringBuilder cipherText;
     public static StringBuilder binary;       // Menampung plainText dalam bentuk bit
     public static ArrayList<ArrayList<StringBuilder>> container16;  // Untuk menampung 16 blok plaintext awal
-    public static int first_cnt, last_cnt;
+    public static int first_idx, last_idx;
     
     NewCryptoAlgorithm() {
         plainText = new StringBuilder();
         cipherText = new StringBuilder();
         container16 = new ArrayList<ArrayList<StringBuilder>>();
         binary = new StringBuilder();
-        first_cnt = 0;
-        last_cnt = plainText.length()-1;
+        first_idx = 0;
+        last_idx = plainText.length()-1;
     }
     
     public static void main(String[] args) {
@@ -45,7 +45,25 @@ public class NewCryptoAlgorithm {
         }
     }
     
-    public static void get8Bit ()
+    public static StringBuilder get8BitForward () {
+    // Ambil 8 bit secara maju dari idx yang dikembalikan melalui stringBuilder
+        StringBuilder result = new StringBuilder();
+        for (int i=0; i<8; i++) {
+            result.append(binary.toString().charAt(first_idx));
+            first_idx++;
+        }
+        return result;
+    }
+    
+    public static StringBuilder get8BitBackward () {
+    // Ambil 8 bit secara mundur ke belakang dari idx yang dikembalikan melalui stringBuilder
+        StringBuilder result = new StringBuilder();
+        for (int i=0; i<8; i++) {
+            result.append(binary.toString().charAt(last_idx));
+            last_idx--;
+        }
+        return result;
+    }
     
     public static void get16block() {
         int i = 0;
@@ -56,7 +74,10 @@ public class NewCryptoAlgorithm {
             while (j<4) {
                 if (j>3)
                     j=0;
-                container16[i][j]
+                if (j%2==0) // Jika bagian kolom genap (indeks j == 0 atau 2), isi dengan 8BitForward
+                    container16.get(i).get(j).append(get8BitForward());
+                else
+                    container16.get(i).get(j).append(get8BitBackward());
                 j++;
             }
             i++;
