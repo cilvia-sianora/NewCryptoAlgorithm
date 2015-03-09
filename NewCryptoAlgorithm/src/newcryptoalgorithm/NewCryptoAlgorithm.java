@@ -16,18 +16,19 @@ import java.util.Random;
  */
 public class NewCryptoAlgorithm {
     // Atribut
-    public static StringBuilder plainText;
-    public static StringBuilder cipherText;
-    public static StringBuilder binary;       // Menampung plainText dalam bentuk bit
-    public static ArrayList<ArrayList<StringBuilder>> container16;  // Untuk menampung 16 blok plaintext awal
-    public static int first_idx, last_idx;
-	public static StringBuilder key;
-    public static StringBuilder[][] substitutionMatrix;
-	public static List<Integer> sBox;
-	public static int SIZE;
+    public StringBuilder plainText;
+    public StringBuilder cipherText;
+    public StringBuilder binary;       // Menampung plainText dalam bentuk bit
+    public ArrayList<ArrayList<StringBuilder>> container16;  // Untuk menampung 16 blok plaintext awal
+    public int first_idx, last_idx;
 	
+	public StringBuilder key;
+    public StringBuilder[][] substitutionMatrix;
+	public List<Integer> sBox;
+	public int SIZE;
 	
-    NewCryptoAlgorithm() {
+    
+    public NewCryptoAlgorithm() {
         plainText = new StringBuilder();
         cipherText = new StringBuilder();
         container16 = new ArrayList<ArrayList<StringBuilder>>();
@@ -40,18 +41,7 @@ public class NewCryptoAlgorithm {
 		
 	}
     
-    public static void main(String[] args) {
-//        ConvertToBinaryString();
-//        get16block();
-			plainText = new StringBuilder("haha");
-			System.out.println(plainText);
-			ConvertToBinaryString();
-			System.out.println(plainText);
-			
-    }
-	
-    
-    public static void ConvertToBinaryString () {
+    public void ConvertToBinaryString () {
         byte[] b = plainText.toString().getBytes();
         for (byte b1 : b) {
             int val = b1;
@@ -62,7 +52,7 @@ public class NewCryptoAlgorithm {
         }
     }
     
-    public static StringBuilder get8BitForward () {
+    public StringBuilder get8BitForward () {
     // Ambil 8 bit secara maju dari idx yang dikembalikan melalui stringBuilder
         StringBuilder result = new StringBuilder();
         for (int i=0; i<8; i++) {
@@ -72,7 +62,7 @@ public class NewCryptoAlgorithm {
         return result;
     }
     
-    public static StringBuilder get8BitBackward () {
+    public StringBuilder get8BitBackward () {
     // Ambil 8 bit secara mundur ke belakang dari idx yang dikembalikan melalui stringBuilder
         StringBuilder result = new StringBuilder();
         for (int i=0; i<8; i++) {
@@ -82,7 +72,7 @@ public class NewCryptoAlgorithm {
         return result;
     }
     
-    public static void get16block() {
+    public void get16block() {
         int i = 0;
         int j = 0;
         int idx = 0;
@@ -100,11 +90,55 @@ public class NewCryptoAlgorithm {
             i++;
         }
     }
+    
+    public void barisToKolom() {
+    // Mengubah container16 baris-barisnya menjadi kolom
+        ArrayList<ArrayList<StringBuilder>> temp = new ArrayList<ArrayList<StringBuilder>>();
+        int i =0 ,j=0;
+        while (i<4) {
+            i = 0;
+            while (j<4) {
+                if (j>3)
+                    j=0;
+                temp.get(j).get(i).append(container16.get(i).get(j).toString());
+                container16.get(i).get(j).setLength(0);
+                j++;
+            }
+            i++;
+        }
+        i = 0; j = 0;
+        while (i<4) {
+            i = 0;
+            while (j<4) {
+                if (j>3)
+                    j=0;
+                container16.get(i).get(j).append(temp.get(i).get(j).toString());
+                j++;
+            }
+            i++;
+        }
+    }
+    
+    public void printContainer16() {
+        int i =0 ,j=0;
+        while (i<4) {
+            i = 0;
+            while (j<4) {
+                if (j>3) {
+                    j=0;
+                    System.out.println("");
+                }
+                System.out.print(container16.get(i).get(j).toString()+"\t");
+                j++;
+            }
+            i++;
+        }
+    }
 	
 	/** From Key Input to Substitution Matrix **/
 	
 	// make S-BOX based on seed
-	public static void makeSBox (int seed){
+	public void makeSBox (int seed){
 		Random ran = new Random(seed);
 		int temp;
 		while(sBox.size() < SIZE){
@@ -116,20 +150,20 @@ public class NewCryptoAlgorithm {
 	}
 	
 	// return the result of box permutation with S-BOX
-	public static StringBuilder[] permutation(StringBuilder[] box){
+	public StringBuilder[] permutation(StringBuilder[] box){
 		StringBuilder[] result = new StringBuilder[SIZE];
 		for(int i=0;i<SIZE;i++)
 			result[sBox.get(i)] = box[i];
 		return result;
 	}
 	
-	public static StringBuilder XOR(StringBuilder init){
+	public StringBuilder XOR(StringBuilder init){
 		
 		return null;
 	}
 	
 	// make the substitution matrix based on our algorithm
-	public static void makeSubstitutionMatrix(){
+	public void makeSubstitutionMatrix(){
 		StringBuilder[] K = new StringBuilder[SIZE];
 		StringBuilder[] Ka = new StringBuilder[SIZE];
 		
