@@ -41,15 +41,18 @@ public class NewCryptoAlgorithm {
 		
 	}
     
-    public void ConvertToBinaryString () {
-        byte[] b = plainText.toString().getBytes();
+	// return binary string of text
+	public StringBuilder convertToBinaryString (StringBuilder text) {
+        StringBuilder result = new StringBuilder();
+		byte[] b = text.toString().getBytes();
         for (byte b1 : b) {
             int val = b1;
             for (int i = 0; i < 8; i++) {
-               binary.append((val & 128) == 0 ? 0 : 1);
+               result.append((val & 128) == 0 ? 0 : 1);
                val <<= 1;
             }
         }
+		return result;
     }
     
     public StringBuilder get8BitForward () {
