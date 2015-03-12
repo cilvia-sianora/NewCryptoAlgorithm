@@ -1,9 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-
 package newcryptoalgorithm;
 
 import java.util.ArrayList;
@@ -11,7 +5,7 @@ import java.util.List;
 import java.util.Random;
 
 /**
- *
+ * Manage the encryption and decryption from our algorithm
  * @author Andarias Silvanus & Cilvia Sianora Putri
  */
 public class NewCryptoAlgorithm {
@@ -37,12 +31,22 @@ public class NewCryptoAlgorithm {
         first_idx = 0;
         last_idx = plainText.length()-1;
 		SIZE = 16;
-		substitutionMatrix = new StringBuilder[SIZE][SIZE];
 		sBox = new ArrayList<>();
+		substitutionMatrix = new StringBuilder[SIZE][SIZE];
+		for(int i=0;i<SIZE;i++){
+			for(int j=0;j<SIZE;j++){
+				substitutionMatrix[i][j] = new StringBuilder();
+			}
+		}
 		
 	}
     
 	// return binary string of text
+	/**
+	 * change the text into binary string
+	 * @param text initial text
+	 * @return binary string of text
+	 */
 	public StringBuilder convertToBinaryString (StringBuilder text) {
         StringBuilder result = new StringBuilder();
 		byte[] b = text.toString().getBytes();
@@ -141,7 +145,10 @@ public class NewCryptoAlgorithm {
 	
 	/** From Key Input to Substitution Matrix **/
 	
-	// make S-BOX based on seed
+	/**
+	 * make S-BOX based on seed
+	 * @param seed parameter to random the integer
+	 */
 	public void makeSBox (int seed){
 		Random ran = new Random(seed);
 		int temp;
@@ -152,8 +159,12 @@ public class NewCryptoAlgorithm {
 			}
 		}
 	}
-	
-	// return the result of box permutation with S-BOX
+
+	/**
+	 * do the permutation with S-BOX
+	 * @param box the initial box
+	 * @return the result of permutation
+	 */
 	public StringBuilder[] permutation(StringBuilder[] box){
 		StringBuilder[] result = new StringBuilder[SIZE];
 		for(int i=0;i<SIZE;i++){
@@ -163,20 +174,40 @@ public class NewCryptoAlgorithm {
 		return result;
 	}
 	
-	public StringBuilder XOR(StringBuilder init){
+	public StringBuilder XOR(StringBuilder string1, StringBuilder string2){
+		StringBuilder result = new StringBuilder();
 		
-		return null;
+		// if length of the string2 different
+		if(string1.length() > string2.length()){
+			do{
+				string2.insert(0, '0');
+			} while(string2.length()<string1.length());
+		} else if (string1.length() < string2.length()){
+			do{
+				string2.insert(0, '0');
+			} while(string2.length()<string1.length());
+			
+		}
+		
+		// do the XOR
+		for(int i=0;i<string1.length();i++){
+			result.append((char) string1.charAt(i) ^ string2.charAt(i));
+		}
+		
+		return result;
 	}
 	
-	// make the substitution matrix based on our algorithm
+	/**
+	 * make the substitution matrix based on our algorithm
+	 */
 	public void makeSubstitutionMatrix(){
 		// inisialization
-		StringBuilder[] K = new StringBuilder[SIZE];
-		StringBuilder[] Ka = new StringBuilder[SIZE];
+		StringBuilder[] k = new StringBuilder[SIZE];
+		StringBuilder[] ka = new StringBuilder[SIZE];
 		StringBuilder binaryKey = new StringBuilder();
 		for(int i=0;i<SIZE;i++){
-			K[i] = new StringBuilder();
-			Ka[i] = new StringBuilder();
+			k[i] = new StringBuilder();
+			ka[i] = new StringBuilder();
 		}
 		
 		// change key to binary string
@@ -184,16 +215,36 @@ public class NewCryptoAlgorithm {
 		
 		// divide the key into 16 parts
 		for(int i=0;i<SIZE;i++){
-			K[i].append(binaryKey.substring(0,8));
+			k[i].append(binaryKey.substring(0,8));
 			binaryKey.delete(0,8);
 		}
-		
-		// do the permutation
-		Ka = permutation(K);
+		int i = 0;
 //		for(int i=0;i<SIZE;i++){
-//			//System.out.println(K[i]);
-//			System.out.println(Ka[i]);
-//			//System.out.println(sBox.get(i));
+			// do the permutation
+			ka = permutation(k);
+			
+			for(int j=0;j<SIZE;j++){
+				substitutionMatrix[i][j].append(XOR(k[j],ka[j]));
+			}
+			
+			StringBuilder[] k1a = new StringBuilder[SIZE];
+			for(int l=0;l<SIZE;l++)
+				k1a[l] = new StringBuilder();
+			k1a = permutation(substitutionMatrix[i]);
+			i++;
+			for(int j=0;j<SIZE;j++){
+				substitutionMatrix[i][j].append(XOR(ka[j],k1a[j]));
+			}
+			
+			StringBuilder[] k2a = new StringBuilder[SIZE];
+			for(int l=0;l<SIZE;l++)
+				k2a[l] = new StringBuilder();
+			k2a = permutation(substitutionMatrix[i]);
+			i++;
+			for(int j=0;j<SIZE;j++){
+				substitutionMatrix[i][j].append(XOR(k1a[j],k2a[j]));
+			}
 //		}
+		
 	}
 }

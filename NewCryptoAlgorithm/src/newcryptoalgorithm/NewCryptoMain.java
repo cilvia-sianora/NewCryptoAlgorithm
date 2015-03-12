@@ -1,13 +1,7 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-
 package newcryptoalgorithm;
 
 /**
- *
+ * Main
  * @author Andarias Silvanus
  */
 public class NewCryptoMain {
@@ -26,14 +20,24 @@ public class NewCryptoMain {
 //		}
 		
 		StringBuilder test = new StringBuilder();
-		test.append("haha");
-		System.out.println(test);
-		test = new StringBuilder("test");
-		System.out.println(test);
+		StringBuilder test2 = new StringBuilder();
+		StringBuilder result = new StringBuilder();
+		test.append("100");
+		test2.append("01");
+		result = NC.XOR(test, test2);
+		System.out.println(result);
+		
+//		test.append("haha");
+//		System.out.println(test);
+//		test = new StringBuilder("test");
+//		System.out.println(test);
+		
+		
 		
 //		NC.key.append(text);
 //		NC.makeSBox(30);
 //		NC.makeSubstitutionMatrix();
+		
 		
 //		StringBuilder[] init = new StringBuilder[16];
 //		StringBuilder[] result = new StringBuilder[16];
