@@ -16,10 +16,10 @@ public class NewCryptoAlgorithm {
     public ArrayList<ArrayList<StringBuilder>> container16;  // Untuk menampung 16 blok plaintext awal
     public int first_idx, last_idx;
 	
-	public StringBuilder key;
+	private StringBuilder key;
     public StringBuilder[][] substitutionMatrix;
-	public List<Integer> sBox;
-	public int SIZE;
+	private List<Integer> sBox;
+	private int SIZE;
 	
     
     public NewCryptoAlgorithm() {
@@ -38,10 +38,24 @@ public class NewCryptoAlgorithm {
 				substitutionMatrix[i][j] = new StringBuilder();
 			}
 		}
-		
 	}
+	
+	/** Getters and Setters **/
     
-	// return binary string of text
+	public void setKey(String k){
+		key.append(k);
+	}
+	
+	public StringBuilder getKey(){
+		return key;
+	}
+	
+	public StringBuilder[][] getSubstitutionMatrix(){
+		return substitutionMatrix;
+	}
+	
+	/** Other Functions **/
+	
 	/**
 	 * change the text into binary string
 	 * @param text initial text
@@ -174,6 +188,12 @@ public class NewCryptoAlgorithm {
 		return result;
 	}
 	
+	/**
+	 * do the XOR operation between first and second string
+	 * @param string1 the first string
+	 * @param string2 the second string
+	 * @return result of XOR operation
+	 */
 	public StringBuilder XOR(StringBuilder string1, StringBuilder string2){
 		StringBuilder result = new StringBuilder();
 		
@@ -198,16 +218,36 @@ public class NewCryptoAlgorithm {
 	}
 	
 	/**
+	 * return the hexadecimal of binary string
+	 * @param text binary string input
+	 * @return hexadecimal string of text
+	 */
+	public StringBuilder getHex(StringBuilder text){
+		StringBuilder temp = new StringBuilder();		
+		temp.append(Integer.toString(Integer.parseInt(text.toString(),2),16));
+		return temp;
+	}
+	
+	public void printArray(StringBuilder[] arr){
+		for(int i=0;i<SIZE;i++){
+			System.out.println(arr[i]);
+			System.out.println(getHex(arr[i]));
+		}
+	}
+	
+	/**
 	 * make the substitution matrix based on our algorithm
 	 */
 	public void makeSubstitutionMatrix(){
 		// inisialization
 		StringBuilder[] k = new StringBuilder[SIZE];
 		StringBuilder[] ka = new StringBuilder[SIZE];
+		StringBuilder[] kBefore = new StringBuilder[SIZE];
 		StringBuilder binaryKey = new StringBuilder();
 		for(int i=0;i<SIZE;i++){
 			k[i] = new StringBuilder();
 			ka[i] = new StringBuilder();
+			kBefore[i] = new StringBuilder();
 		}
 		
 		// change key to binary string
@@ -218,33 +258,77 @@ public class NewCryptoAlgorithm {
 			k[i].append(binaryKey.substring(0,8));
 			binaryKey.delete(0,8);
 		}
-		int i = 0;
-//		for(int i=0;i<SIZE;i++){
+		
+//		printArray(k);
+
+//		int i = 0;
+		for(int i=0;i<SIZE;i++){
+			// do the inisialization and assignment
+			if(i>0){ // after the first iteration
+//				System.out.println("-- Iteration "+ i +"--");
+//				
+//				System.out.println("- ka before goes to for -");
+//				printArray(ka);
+//				
+//				System.out.println("- ka before goes to for, but without printArray -");
+//				for(int j=0;j<SIZE;j++){
+//					System.out.println(ka[j]);
+//					System.out.println(getHex(ka[j]));
+//				}
+				
+//				System.out.println("- ka inside for, at the very first of iteration before k.setLength(0) -");
+//				System.out.println("- ka inside the first for -");
+				for(int j=0;j<SIZE;j++){
+//					System.out.println(ka[j]);
+//					System.out.println(getHex(ka[j]));
+				//	k[j].setLength(0);
+					k[j].replace(0,8,substitutionMatrix[i-1][j].toString());
+					kBefore[j].replace(0,8,ka[j].toString());
+					ka[j].setLength(0);
+				//	kBefore[j].setLength(0);
+				//	ka[j] = new StringBuilder();
+				}
+//				for(int j=0;j<SIZE;j++){
+//					kBefore[j].replace(0,8,ka[j].toString());
+//				}
+//				System.out.println("- k get from substitutionMatrix -");
+//				printArray(k);
+//				System.out.println("- kBefore get from ka -");
+//				printArray(kBefore);
+//				for(int j=0;j<SIZE;j++){
+//					ka[j].setLength(0);
+//				}
+				
+			} else if (i == 0){ // for the first iteration
+//				System.out.println("--First Iteration--");
+				for(int j=0;j<SIZE;j++){
+					kBefore[j].append(k[j]);
+				}
+			}
+			
 			// do the permutation
-			ka = permutation(k);
-			
 			for(int j=0;j<SIZE;j++){
-				substitutionMatrix[i][j].append(XOR(k[j],ka[j]));
+				ka[j].setLength(0);
+				ka[j].append(permutation(k)[j]);
 			}
 			
-			StringBuilder[] k1a = new StringBuilder[SIZE];
-			for(int l=0;l<SIZE;l++)
-				k1a[l] = new StringBuilder();
-			k1a = permutation(substitutionMatrix[i]);
-			i++;
-			for(int j=0;j<SIZE;j++){
-				substitutionMatrix[i][j].append(XOR(ka[j],k1a[j]));
-			}
+//			printArray(k);
+//			System.out.println("- After permutation: ka -");
+//			printArray(ka);
+//			
+//			System.out.println("- Result XO ka&k -");
 			
-			StringBuilder[] k2a = new StringBuilder[SIZE];
-			for(int l=0;l<SIZE;l++)
-				k2a[l] = new StringBuilder();
-			k2a = permutation(substitutionMatrix[i]);
-			i++;
+			// XOR and put to matrix
 			for(int j=0;j<SIZE;j++){
-				substitutionMatrix[i][j].append(XOR(k1a[j],k2a[j]));
-			}
-//		}
+//				System.out.println(XOR(kBefore[j],ka[j]));
+//				System.out.println(getHex(XOR(kBefore[j],ka[j])));
+				substitutionMatrix[i][j].append(XOR(kBefore[j],ka[j]));
+//				k[j].replace(0,8,substitutionMatrix[i][j].toString());
+			}	
+			
+//			System.out.println("- Result XO ka&k and put to matrix -");
+//			printArray(substitutionMatrix[i]);
+		}
 		
 	}
 }

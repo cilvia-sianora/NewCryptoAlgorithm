@@ -9,7 +9,7 @@ public class NewCryptoMain {
 	public static void main(String args[]){
 		NewCryptoAlgorithm NC = new NewCryptoAlgorithm();
 		//String text = "Plaintext akan dibagi per 8 bit. Bila ternyata hasil mod plaintext tidak 0, maka sisa plaintext akan digabung dengan padding. Selanjutnya program akan mengambil 4 blok untuk disusun menjadi blok 4x4. Baris pertama diambil dari 8 bit pertama dari plaintext, baris kedua diambil dari 8 bit terakhir, baris ketiga diambil dari 8 bit dari kedua pertama, dan baris keempat diambil dari 8 bit kedua terakhir dari plaintext. Counter pertama diset pada posisi kedua pertama (second), dan counter kedua akan diset pada posisi kedua terakhir. Counter akan terus berjalan seiring dengan pengambilan blok 4x4 plaintext lainnya.";
-		String text = "ABCDEFGHIJKLMNOP";
+		String text = "Online Round 12a";
 //		NC.plainText.append(text);
 //		NC.binary = NC.convertToBinaryString(NC.plainText);
 //		System.out.println(NC.binary);
@@ -21,22 +21,41 @@ public class NewCryptoMain {
 		
 		StringBuilder test = new StringBuilder();
 		StringBuilder test2 = new StringBuilder();
-		StringBuilder result = new StringBuilder();
-		test.append("100");
-		test2.append("01");
-		result = NC.XOR(test, test2);
-		System.out.println(result);
+		StringBuilder test3 = new StringBuilder();
+//		StringBuilder result = new StringBuilder();
+//		test.append("AB");
+//		test2.append("01");
+//		result = NC.XOR(test, test2);
+//		System.out.println(result);
 		
-//		test.append("haha");
+//		System.out.println(NC.getHex(NC.convertToBinaryString(test)));
+		
+		
+//		test.append("10101010");
+////		test2 = test;
+//		test.replace(0,8,"01010101");
 //		System.out.println(test);
-//		test = new StringBuilder("test");
+//		System.out.println(test2);
+//		test.setLength(0);
+//		test2.setLength(0);
+////		System.out.println(test);
+//		test3.append("test3");
+//		test.append(test3);
+//		test2 = test;
 //		System.out.println(test);
+//		System.out.println(test2);
 		
 		
+		NC.setKey(text);
+		NC.makeSBox(30);
+		NC.makeSubstitutionMatrix();
 		
-//		NC.key.append(text);
-//		NC.makeSBox(30);
-//		NC.makeSubstitutionMatrix();
+		for(int i=0;i<16;i++){
+			for(int j=0;j<16;j++){
+				System.out.print(NC.getHex(NC.substitutionMatrix[i][j]) + " ");
+			}
+			System.out.println();
+		}
 		
 		
 //		StringBuilder[] init = new StringBuilder[16];
