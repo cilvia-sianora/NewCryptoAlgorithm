@@ -13,7 +13,8 @@ public class NewCryptoAlgorithm {
     public StringBuilder plainText;
     public StringBuilder cipherText;
     public StringBuilder binary;       // Menampung plainText dalam bentuk bit
-    public ArrayList<ArrayList<StringBuilder>> container16;  // Untuk menampung 16 blok plaintext awal
+//    public ArrayList<ArrayList<StringBuilder>> container16;  // Untuk menampung 16 blok plaintext awal
+    String[][] container16;
     public int first_idx, last_idx;
 	
 	private StringBuilder key;
@@ -26,7 +27,8 @@ public class NewCryptoAlgorithm {
         plainText = new StringBuilder();
         cipherText = new StringBuilder();
 		key = new StringBuilder();
-        container16 = new ArrayList<ArrayList<StringBuilder>>();
+//        container16 = new ArrayList<ArrayList<StringBuilder>>();
+        container16 = new String[4][4];
         binary = new StringBuilder();
         first_idx = 0;
         last_idx = plainText.length()-1;
@@ -62,51 +64,104 @@ public class NewCryptoAlgorithm {
 	 * @return binary string of text
 	 */
 	public StringBuilder convertToBinaryString (StringBuilder text) {
-        StringBuilder result = new StringBuilder();
-		byte[] b = text.toString().getBytes();
-        for (byte b1 : b) {
-            int val = b1;
-            for (int i = 0; i < 8; i++) {
-               result.append((val & 128) == 0 ? 0 : 1);
-               val <<= 1;
+            StringBuilder result = new StringBuilder();
+            byte[] b = text.toString().getBytes();
+            for (byte b1 : b) {
+                int val = b1;
+                for (int i = 0; i < 8; i++) {
+                   result.append((val & 128) == 0 ? 0 : 1);
+                   val <<= 1;
+                }
             }
+            return result;
         }
-		return result;
-    }
     
-    public StringBuilder get8BitForward () {
+    public String get8BitForward () {
     // Ambil 8 bit secara maju dari idx yang dikembalikan melalui stringBuilder
-        StringBuilder result = new StringBuilder();
+        String result = new String();
+        result="";
+        char temp;
         for (int i=0; i<8; i++) {
-            result.append(binary.toString().charAt(first_idx));
+            temp = binary.toString().charAt(first_idx);
+            result += temp;
             first_idx++;
         }
         return result;
     }
     
-    public StringBuilder get8BitBackward () {
+    public String get8BitBackward () {
     // Ambil 8 bit secara mundur ke belakang dari idx yang dikembalikan melalui stringBuilder
-        StringBuilder result = new StringBuilder();
+        String result = new String();
+        result = "";
+        char temp;
         for (int i=0; i<8; i++) {
-            result.append(binary.toString().charAt(last_idx));
+            temp = binary.toString().charAt(last_idx);
+            result += temp;
             last_idx--;
+        }
+        String result2 = new String();
+        result2 = reverseString(result);
+        return result2;
+    }
+    
+    public String reverseString(String target) {
+        String result = new String();
+        result = "";
+        char temp;
+        int idx = target.length()-1;
+        for (int i=0; i<target.length(); i++) {
+            temp = target.charAt(idx);
+            result = result + temp;
+            idx--;
         }
         return result;
     }
     
-    public void get16block() {
+    public void set16block() {
         int i = 0;
         int j = 0;
         int idx = 0;
         while (i<4) {
-            i = 0;
+            if (j>3)
+                j=0;
             while (j<4) {
-                if (j>3)
-                    j=0;
-                if (j%2==0) // Jika bagian kolom genap (indeks j == 0 atau 2), isi dengan 8BitForward
-                    container16.get(i).get(j).append(get8BitForward());
-                else
-                    container16.get(i).get(j).append(get8BitBackward());
+                if (j%2==0) { // Jika bagian kolom genap (indeks j == 0 atau 2), isi dengan 8BitForward
+                    container16[i][j] = get8BitForward();
+                }
+                else {
+                    container16[i][j] = get8BitBackward();
+                }
+                j++;
+            }
+            i++;
+        }
+    }
+    
+    public String fillPadding() {
+        String result = "00000000";
+//        String result = "11111111";
+        return result;
+    }
+    
+    public void set16blockPadding() {
+        int i = 0;
+        int j = 0;
+        int idx = 0;
+        while (i<4) {
+            if (j>3)
+                j=0;
+            while (j<4) {
+                if (last_idx-first_idx>6) {
+                    if (j%2==0) { // Jika bagian kolom genap (indeks j == 0 atau 2), isi dengan 8BitForward
+                        container16[i][j] = get8BitForward();
+                    }
+                    else {
+                        container16[i][j] = get8BitBackward();
+                    }
+                }
+                else {
+                    container16[i][j] = fillPadding();
+                }
                 j++;
             }
             i++;
@@ -115,26 +170,25 @@ public class NewCryptoAlgorithm {
     
     public void barisToKolom() {
     // Mengubah container16 baris-barisnya menjadi kolom
-        ArrayList<ArrayList<StringBuilder>> temp = new ArrayList<ArrayList<StringBuilder>>();
+        
+        String[][] temp = new String[4][4];
+        
         int i =0 ,j=0;
         while (i<4) {
-            i = 0;
+            if (j>3)
+                j=0;
             while (j<4) {
-                if (j>3)
-                    j=0;
-                temp.get(j).get(i).append(container16.get(i).get(j).toString());
-                container16.get(i).get(j).setLength(0);
+                temp[j][i] = container16[i][j];
                 j++;
             }
             i++;
         }
         i = 0; j = 0;
         while (i<4) {
-            i = 0;
+            if (j>3)
+                j=0;
             while (j<4) {
-                if (j>3)
-                    j=0;
-                container16.get(i).get(j).append(temp.get(i).get(j).toString());
+                container16[i][j] = temp[i][j];
                 j++;
             }
             i++;
@@ -144,17 +198,34 @@ public class NewCryptoAlgorithm {
     public void printContainer16() {
         int i =0 ,j=0;
         while (i<4) {
-            i = 0;
+            if (j>3) {
+                j=0;
+                System.out.println("");
+            }
             while (j<4) {
-                if (j>3) {
-                    j=0;
-                    System.out.println("");
-                }
-                System.out.print(container16.get(i).get(j).toString()+"\t");
+                System.out.print(container16[i][j]+"\t");
                 j++;
             }
             i++;
         }
+    }
+    
+    public void printContainer16Manusiawi() {
+        int i =0 ,j=0;
+        char display;
+        while (i<4) {
+            if (j>3) {
+                j=0;
+                System.out.println("");
+            }
+            while (j<4) {
+                display = (char) Integer.parseInt(container16[i][j],2);
+                System.out.print(display+"\t");
+                j++;
+            }
+            i++;
+        }
+        System.out.println("");
     }
 	
 	/** From Key Input to Substitution Matrix **/
@@ -231,7 +302,10 @@ public class NewCryptoAlgorithm {
 		return temp;
 	}
 	
-	
+	/**
+	 * print array of StringBuilder to terminal
+	 * @param arr array of StringBuilder
+	 */
 	public void printArray(StringBuilder[] arr){
 		for(int i=0;i<SIZE;i++){
 			System.out.println(arr[i]);
@@ -239,29 +313,24 @@ public class NewCryptoAlgorithm {
 		}
 	}
 	
-	public StringBuilder shiftBit(StringBuilder binaryStr, int digit){
+	/**
+	 * shift binary string to the left 
+	 * @param binaryStr binary string in StringBuilder
+	 * @param digit	amount of shifting
+	 * @return binary string result in StringBuilder
+	 */
+	public StringBuilder shiftBitToLeft(StringBuilder binaryStr, int digit){
 		StringBuilder result = new StringBuilder();
-//		if(digit % 2 == 0){
-			result.append(binaryStr.substring(digit,binaryStr.length()));
-			result.append(binaryStr.substring(0,digit));
-//		} else {
-//			result.append(binaryStr.substring(binaryStr.length()-digit));
-//			result.append(binaryStr.substring(0,binaryStr.length()-digit));
-//			
-//		}
+		result.append(binaryStr.substring(digit,binaryStr.length()));
+		result.append(binaryStr.substring(0,digit));
 		return result;
 	}
-//	
-//	public StringBuilder[] putBinaryStringToArray(StringBuilder binaryStr){
-//		StringBuilder[] result = new StringBuilder[SIZE];
-//		for(int i=0;i<SIZE;i++){
-//			result[i] = new StringBuilder();
-//			result[i].append(binaryStr.substring(0,8));
-//			binaryStr.delete(0,8);
-//		}
-//		return result;
-//	}
-	
+
+	/**
+	 * Get the binary string from array with size=16
+	 * @param arr array of StringBuilder
+	 * @return binary string
+	 */
 	public StringBuilder getBinaryStringFromArray(StringBuilder[] arr){
 		StringBuilder result = new StringBuilder();
 		for(int i=0;i<SIZE;i++){
@@ -269,6 +338,7 @@ public class NewCryptoAlgorithm {
 		}
 		return result;
 	}
+	
 	
 	public StringBuilder negation(StringBuilder binaryStr, int digit, int iteration){
 		StringBuilder result = new StringBuilder();
@@ -297,6 +367,12 @@ public class NewCryptoAlgorithm {
 		return result;
 	}
 	
+	/**
+	 * Do the addition operation of binary string
+	 * @param binaryStr binary string
+	 * @param adder integer to be added to binaryStr
+	 * @return binary string result
+	 */
 	public StringBuilder add(StringBuilder binaryStr, int adder){
 		StringBuilder result = new StringBuilder();
 		int sum = Integer.parseInt(binaryStr.toString(), 2) + adder;
@@ -342,7 +418,7 @@ public class NewCryptoAlgorithm {
 				}
 				StringBuilder temp = new StringBuilder();
 				temp.append(getBinaryStringFromArray(substitutionMatrix[i-1]));
-				temp.replace(0,temp.length(),shiftBit(temp,i).toString());
+				temp.replace(0,temp.length(),shiftBitToLeft(temp,i).toString());
 				for(int j=0;j<SIZE;j++){
 					k[j].setLength(0);
 					k[j].append(temp.substring(0,8));
@@ -369,6 +445,9 @@ public class NewCryptoAlgorithm {
 		}
 	}
 	
+	/**
+	 * make the substitutionMatrix distinct
+	 */
 	public void fixSubstitutionMatrix(){
 		List<String> distinctBinary = new ArrayList<>();
 		StringBuilder temp = new StringBuilder();
@@ -376,7 +455,6 @@ public class NewCryptoAlgorithm {
 		for(int i=0;i<SIZE;i++){
 			for(int j=0;j<SIZE;j++){
 				temp.append(substitutionMatrix[i][j]);
-//				System.out.println(temp);
 				if(distinctBinary.contains(temp.toString())){
 					do{
 						temp.replace(0,8,add(temp,1).toString());
@@ -388,4 +466,56 @@ public class NewCryptoAlgorithm {
 			}
 		}
 	}
+        
+        public void printBinary() {
+            // Print binary
+            int idx = 0;
+            char temp;
+            String bin8;
+            bin8 = "";
+            for (int i=0; i<binary.length(); i++) {
+                for (int j=0; j<8; j++) {
+                    if (idx<binary.length()) {
+                        temp = binary.charAt(idx);
+                        idx++;
+                        bin8 = bin8 + temp;
+                    }
+                }
+                System.out.print(bin8);
+                System.out.print(" ");
+                bin8 = "";
+            }
+            System.out.println("");
+        }
+        
+        public void encrypt() {
+            binary = convertToBinaryString(plainText);
+            last_idx = binary.length()-1;
+//            System.out.println("panjang binary: "+binary.length());
+//            System.out.println("first idx: "+first_idx);
+//            System.out.println("last idx: "+last_idx);
+            
+            boolean finished = false;
+            while (!finished) {
+            // Encrypt here
+                if (last_idx-first_idx>=127) {
+                // Pengelompokkan 16 blok normal
+                    set16block();
+                    barisToKolom();
+                    printContainer16Manusiawi();
+                }
+                else {
+                // Pengelompokkan 16 blok dengan padding jika jumlah blok tersisa tidak mencapai 16 blok
+                    System.out.println("Masuk Padding");
+                    set16blockPadding();
+                    barisToKolom();
+                    printContainer16Manusiawi();
+                    finished = true;
+                }
+            }
+        }
+        
+        public void decrypt() {
+            
+        }
 }
