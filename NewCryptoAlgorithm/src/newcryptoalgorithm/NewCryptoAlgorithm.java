@@ -219,7 +219,7 @@ public class NewCryptoAlgorithm {
                 System.out.println("");
             }
             while (j<4) {
-                display = (char) Integer.parseInt(container16[i][j]);
+                display = (char) Integer.parseInt(container16[i][j],2);
                 System.out.print(display+"\t");
                 j++;
             }
