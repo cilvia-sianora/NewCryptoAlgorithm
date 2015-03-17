@@ -746,6 +746,8 @@ public class NewCryptoAlgorithm {
 	}
 	
 	public void encrypt() {
+		System.out.println("-Encrypt ECB-");
+		
 		binary = convertToBinaryString(plainText);
 		last_idx = binary.length()-1;
 
@@ -785,11 +787,13 @@ public class NewCryptoAlgorithm {
 			binaryCipherText += getCipherText();
 		}
 		cipherText.append(bitToText(binaryCipherText));
-		
+		System.out.println("ciphertext="+cipherText);
+		System.out.println();
 		plainText.setLength(0);
 	}
 
 	public void decrypt() {
+		System.out.println("-Decrypt ECB-");
 		
 		first_idx = 0;
 		while(first_idx < binaryCipherText.length()){
@@ -814,8 +818,8 @@ public class NewCryptoAlgorithm {
 			} else {
 				reversePosCnt16();
 			}
-			System.out.println(plainText);
 		}
+		System.out.println("plaintext="+plainText);
 	}
 	
 	public void makeInitializationVector(int seed){
@@ -859,6 +863,7 @@ public class NewCryptoAlgorithm {
 	}
 	
 	public void encryptCBC(){
+		System.out.println("-Encrypt CBC-");
 		makeInitializationVector(getSeed());
 		
 		binary = convertToBinaryString(plainText);
@@ -905,11 +910,13 @@ public class NewCryptoAlgorithm {
 			initializationVector = copyContainer16();
 		}
 		cipherText.append(bitToText(binaryCipherText));
-		System.out.println(cipherText);
+		System.out.println("ciphertext="+cipherText);
 		plainText.setLength(0);
 	}
 	
 	public void decryptCBC(){
+		System.out.println("-Decrypt CBC-");
+		
 		String[][] temp = new String[4][4];
 		makeInitializationVector(getSeed());
 		
@@ -949,8 +956,8 @@ public class NewCryptoAlgorithm {
 			} else {
 				reversePosCnt16();
 			}
-			System.out.println(plainText);
 		}
+		System.out.println("plaintext="+plainText);
 	}
 	
 	public void encryptCFB(){
@@ -993,12 +1000,9 @@ public class NewCryptoAlgorithm {
 			
 			// get ciphertext from block
 			binaryCipherText += getCipherText();
-			
-			System.out.println("akhir iterasi");
-			printContainer16Manusiawi();
 		}
 		cipherText.append(bitToText(binaryCipherText));
-		System.out.println(cipherText);
+		System.out.println("ciphertext="+cipherText);
 		plainText.setLength(0);
 	}
 	
@@ -1007,7 +1011,6 @@ public class NewCryptoAlgorithm {
 		System.out.println("-Decrypt CFB-");
 		makeInitializationVector(getSeed());
 		String[][] temp = new String[4][4];
-		
 		
 		first_idx = 0;
 		while (first_idx < binaryCipherText.length()) {
@@ -1038,16 +1041,14 @@ public class NewCryptoAlgorithm {
 			
 			part2CFB("decrypt",container16,temp);
 			
-			System.out.println("akhir iterasi");
-			printContainer16Manusiawi();
 			
 			if(first_idx == binaryCipherText.length()){
 				reversePosCnt16Pad();
 			} else {
 				reversePosCnt16();
 			}
-			System.out.println(plainText);
 		}
+		System.out.println("plaintext="+plainText);
 	}
 	
 	public String[][] getPlainBlockForCFB(){

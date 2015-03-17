@@ -22,12 +22,12 @@ public class NewCryptoMain {
 //		NC.decrypt();
 
 		// CBC
-//		NC.encryptCBC();
-//		NC.decryptCBC();
+		NC.encryptCBC();
+		NC.decryptCBC();
 		
 		// CFB
-		NC.encryptCFB();		
-		NC.decryptCFB();
+//		NC.encryptCFB();		
+//		NC.decryptCFB();
 		
 		
 	}
