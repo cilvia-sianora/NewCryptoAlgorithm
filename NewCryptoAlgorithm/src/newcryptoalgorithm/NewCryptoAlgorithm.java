@@ -12,10 +12,13 @@ public class NewCryptoAlgorithm {
     // Atribut
     public StringBuilder plainText;
     public StringBuilder cipherText;
+	public String binaryCipherText;
     public StringBuilder binary;       // Menampung plainText dalam bentuk bit
 //    public ArrayList<ArrayList<StringBuilder>> container16;  // Untuk menampung 16 blok plaintext awal
     String[][] container16;
+	String[][] initializationVector;
     public int first_idx, last_idx;
+	public int offset, CFB_idx;
 	
 	private StringBuilder key;
     public StringBuilder[][] substitutionMatrix;
@@ -29,8 +32,12 @@ public class NewCryptoAlgorithm {
 		key = new StringBuilder();
 //        container16 = new ArrayList<ArrayList<StringBuilder>>();
         container16 = new String[4][4];
+		initializationVector = new String[4][4];
         binary = new StringBuilder();
+		binaryCipherText = "";
         first_idx = 0;
+		offset = 0;
+		CFB_idx = 0;
         last_idx = plainText.length()-1;
 		SIZE = 16;
 		sBox = new ArrayList<>();
@@ -50,10 +57,6 @@ public class NewCryptoAlgorithm {
 	
 	public StringBuilder getKey(){
 		return key;
-	}
-	
-	public StringBuilder[][] getSubstitutionMatrix(){
-		return substitutionMatrix;
 	}
 	
 	/** Other Functions **/
@@ -117,7 +120,7 @@ public class NewCryptoAlgorithm {
         return result;
     }
     
-    public void set16block() {
+    public String[][] set16block(String[][] target) {
         int i = 0;
         int j = 0;
         int idx = 0;
@@ -126,15 +129,41 @@ public class NewCryptoAlgorithm {
                 j=0;
             while (j<4) {
                 if (j%2==0) { // Jika bagian kolom genap (indeks j == 0 atau 2), isi dengan 8BitForward
-                    container16[i][j] = get8BitForward();
+                    target[i][j] = get8BitForward();
                 }
                 else {
-                    container16[i][j] = get8BitBackward();
+                    target[i][j] = get8BitBackward();
                 }
                 j++;
             }
             i++;
         }
+        return target;
+    }
+	
+	public String[][] set16blockPadding(String[][] target) {
+        int i = 0;
+        int j = 0;
+        while (i<4) {
+            if (j>3)
+                j=0;
+            while (j<4) {
+                if (last_idx-first_idx>6) {
+                    if (j%2==0) { // Jika bagian kolom genap (indeks j == 0 atau 2), isi dengan 8BitForward
+                        target[i][j] = get8BitForward();
+                    }
+                    else {
+                        target[i][j] = get8BitBackward();
+                    }
+                }
+                else {
+                    target[i][j] = fillPadding();
+                }
+                j++;
+            }
+            i++;
+        }
+        return target;
     }
     
     public String fillPadding() {
@@ -513,60 +542,115 @@ public class NewCryptoAlgorithm {
 		}
 		System.out.println("");
 	}
-
-	public void slidingHorizontal() {
-	// Geser baris container16 secara horizontal
-		String[][] temp = new String[4][4];
-		temp = copyContainer16();
-		String temp_cont = new String();
-
-		// Geser baris 1
-		container16[0][0] = temp[0][3];
-		for (int i=0; i<3; i++)
-			container16[0][i+1] = temp[0][i];
-
-		// Geser baris 2
-		for (int i=0; i<2; i++)
-			container16[1][i] = temp[1][i+2];
-		for (int i=0; i<2; i++)
-			container16[1][i+2] = temp[1][i];
-
-		// Geser baris 3
-		container16[2][3] = temp[2][0];
-		for (int i=1; i<=3; i++)
-			container16[2][i-1] = temp[2][i];
-	}
-
-	public void slidingVertical() {
-	// Geser baris container16 secara vertical
-		String[][] temp = new String[4][4];
-		temp = copyContainer16();
-		String temp_cont = new String();
-
-		// Geser baris 1
-		container16[0][0] = temp[3][0];
-		for (int i=0; i<3; i++)
-			container16[i+1][0] = temp[i][0];
-
-		// Geser baris 2
-		for (int i=0; i<2; i++)
-			container16[i][1] = temp[i+2][1];
-		for (int i=0; i<2; i++)
-			container16[i+2][1] = temp[i][1];
-
-		// Geser baris 3
-		container16[3][2] = temp[0][2];
-		for (int i=1; i<=3; i++)
-			container16[i-1][2] = temp[i][2];
+	
+	public void slidingHorizontalEncrypt(){
+		slidingHorizontal(0,1,"right");
+		slidingHorizontal(1,2,"left");
+		slidingHorizontal(2,3,"right");
 	}
 	
-	public void substitution(){
+	public void slidingVerticalEncrypt(){
+		slidingVertical(0,1,"down");
+		slidingVertical(1,2,"up");
+		slidingVertical(2,3,"down");
+	}
+	
+	public void slidingHorizontalDecrypt(){
+		slidingHorizontal(0,1,"left");
+		slidingHorizontal(1,2,"right");
+		slidingHorizontal(2,3,"left");
+	}
+	
+	public void slidingVerticalDecrypt(){
+		slidingVertical(0,1,"up");
+		slidingVertical(1,2,"down");
+		slidingVertical(2,3,"up");
+	}
+	
+	// Geser baris container16 secara horizontal
+	public void slidingHorizontal(int row, int counter, String direction) {
+		String temp;
+		
+		for(int j=0;j<counter;j++){
+			if(direction.equals("right")){ // shift to right
+				temp = container16[row][3];
+				for(int i=3;i>0;i--){
+					container16[row][i] = container16[row][i-1];
+				}
+				container16[row][0] = temp;
+			} else { // shift to left
+				temp = container16[row][0];
+				for(int i=0;i<3;i++){
+					container16[row][i] = container16[row][i+1];
+				}
+				container16[row][3] = temp;
+			}
+		}
+	}
+
+	// Geser baris container16 secara vertical
+	public void slidingVertical(int col, int counter, String direction) {
+		String temp;
+		
+		for(int j=0;j<counter;j++){
+			if(direction.equals("up")){ // shift upright
+				temp = container16[0][col];
+				for(int i=0;i<3;i++){
+					container16[i][col] = container16[i+1][col];
+				}
+				container16[3][col] = temp;
+			} else { // shift downright
+				temp = container16[3][col];
+				for(int i=3;i>0;i--){
+					container16[i][col] = container16[i-1][col];
+				}
+				container16[0][col] = temp;
+			}
+		}
+	}
+	
+	public void substitutionEncrypt(){
 		int row, col;
 		for(int i=0;i<4;i++){
 			for(int j=0;j<4;j++){
 				row = Integer.parseInt(container16[i][j].substring(0,4),2);
 				col = Integer.parseInt(container16[i][j].substring(4),2);
 				container16[i][j] = substitutionMatrix[row][col].toString();
+			}
+		}
+	}
+	
+	public String decimalToBinaryHex(int dec){
+		String hex = Integer.toBinaryString(dec);
+		while(hex.length() < 4){
+			hex = '0' + hex;
+		}
+		return hex;
+	} 
+	
+	public void substitutionDecrypt(){
+		int i,j;
+		String hex1, hex2;
+		boolean found;
+		for(int k=0;k<4;k++){
+			for(int l=0;l<4;l++){
+				// search in substitutionMatrix
+				found = false;
+				i = 0;
+				while(i<SIZE && !found){
+					j = 0;
+					while(j<SIZE && !found){
+						if(container16[k][l].equals(substitutionMatrix[i][j].toString())){
+							found = true;
+							// replace container16
+							container16[k][l] = decimalToBinaryHex(i) + decimalToBinaryHex(j);
+						}
+						j++;
+					}
+					i++;
+				}
+				
+				
 			}
 		}
 	}
@@ -598,11 +682,67 @@ public class NewCryptoAlgorithm {
 		for(int i=0;i<4;i++){
 			for(int j=0;j<4;j++){
 				temp.append(container16[i][j]);
-				container16[i][j] = XOR(temp, substitutionMatrix[0][k]).toString();
+				container16[i][j] = XOR(temp, substitutionMatrix[0][k]).toString();		
 				k++;
 				temp.setLength(0);
 			}
 		}
+	}
+	
+	public String getCipherText(){
+		String result = "";
+		for(int i=0;i<4;i++){
+			for(int j=0;j<4;j++){
+				result += container16[i][j];
+			}
+		}
+		return result;
+	}
+	
+	public String ConvertToString(){
+		String temp = new String();
+		char tempChar;
+		int i =0 ,j=0;
+		while (i<4) {
+			if (j>3) {
+				j=0;
+			}
+			while (j<4) {
+				tempChar = (char) Integer.parseInt(container16[i][j],2);
+				temp = temp + tempChar;
+				j++;
+			}
+			i++;
+		}
+		return temp;
+	}
+	
+	public void setContainer16FromCipherText(){
+		for(int i=0;i<4;i++){
+			for(int j=0;j<4;j++){
+				container16[i][j] = binaryCipherText.substring(first_idx,first_idx+8);
+				first_idx += 8;
+			}
+		}
+	}
+	
+	// change binary string to text
+	public String bitToText(String bit){
+		String result = "";
+		int ascii;
+		String bitProcess;
+		while(bit.length() % 8 != 0){
+			bit = '0' + bit;
+		}
+		while(bit.length()>0){
+			bitProcess = bit.substring(0,8);
+			//System.out.println(bitProcess);
+			//ascii = bitToInteger(bitProcess);
+			ascii = Integer.parseInt(bitProcess,2);
+			result += (char)ascii;
+			bit = bit.substring(8);
+		}
+		return result;
 	}
 	
 	public void encrypt() {
@@ -619,35 +759,389 @@ public class NewCryptoAlgorithm {
 		// Encrypt here
 			if (last_idx-first_idx>=127) {
 			// Pengelompokkan 16 blok normal
-				set16block();
+				set16block(container16);
 				barisToKolom();
-				printContainer16Manusiawi();
 			}
 			else {
 			// Pengelompokkan 16 blok dengan padding jika jumlah blok tersisa tidak mencapai 16 blok
-				System.out.println("Masuk Padding");
 				set16blockPadding();
 				barisToKolom();
-				printContainer16Manusiawi();
 				finished = true;
 			}
 			
 			// do the encrypt for 16 cycle
 			for(int i=0;i<16;i++){
 				//do the substitution with substitutionMatrix
-				substitution();
+				substitutionEncrypt();
 
 				// shift the blocks of container16
-				slidingHorizontal();
-				slidingVertical();
+				slidingHorizontalEncrypt();
+				slidingVerticalEncrypt();
 			}
 			
 			// do XOR for container16 to end the encryption
 			XORContainer16ToEndEncrypt();
+			
+			binaryCipherText += getCipherText();
 		}
+		cipherText.append(bitToText(binaryCipherText));
+		
+		plainText.setLength(0);
 	}
 
 	public void decrypt() {
-
+		
+		first_idx = 0;
+		while(first_idx < binaryCipherText.length()){
+			setContainer16FromCipherText();
+			
+			// do XOR for operation at the end of encryption
+			XORContainer16ToEndEncrypt();
+			
+			// do the decrypt for 16 cycle
+			for(int i=0;i<16;i++){
+				// shift the blocks of container16
+				slidingVerticalDecrypt();
+				slidingHorizontalDecrypt();
+				
+				//do the substitution with substitutionMatrix
+				substitutionDecrypt();
+			}
+			
+			barisToKolom();
+			if(first_idx == binaryCipherText.length()){
+				reversePosCnt16Pad();
+			} else {
+				reversePosCnt16();
+			}
+			System.out.println(plainText);
+		}
 	}
+	
+	public void makeInitializationVector(int seed){
+		Random ran = new Random(seed);
+		List<Integer> distinct = new ArrayList<>();
+		int temp;
+		String binaryStr;
+		int i = 0;
+		int j = 0;
+		while(distinct.size() < SIZE){
+			temp = ran.nextInt(256);
+			if(!distinct.contains(temp)){
+				distinct.add(temp);
+				binaryStr = Integer.toBinaryString(temp);
+				while(binaryStr.length() < 8){
+					binaryStr = '0' + binaryStr;
+				}
+				initializationVector[i][j] = binaryStr;
+				j++;
+				if(j>3){
+					j = 0;
+					i++;
+				}
+			}
+		}
+	}
+	
+	// for CBC
+	public void XORWithInitializationVector(){
+		StringBuilder tempIV = new StringBuilder();
+		StringBuilder tempPlain = new StringBuilder();
+		for(int i=0;i<4;i++){
+			for(int j=0;j<4;j++){
+				tempIV.append(initializationVector[i][j]);
+				tempPlain.append(container16[i][j]);
+				container16[i][j] = XOR(tempIV,tempPlain).toString();
+				tempIV.setLength(0);
+				tempPlain.setLength(0);
+			}
+		}
+	}
+	
+	public void encryptCBC(){
+		makeInitializationVector(getSeed());
+		
+		binary = convertToBinaryString(plainText);
+		last_idx = binary.length()-1;
+
+		// make substitution matrix
+		makeSBox(getSeed());
+		makeSubstitutionMatrix();
+		fixSubstitutionMatrix();
+		
+		
+		boolean finished = false;
+		while (!finished) {
+		// Encrypt here
+			if (last_idx-first_idx>=127) {
+			// Pengelompokkan 16 blok normal
+				set16block(container16);
+				barisToKolom();
+			}
+			else {
+			// Pengelompokkan 16 blok dengan padding jika jumlah blok tersisa tidak mencapai 16 blok
+				set16blockPadding();
+				barisToKolom();
+				finished = true;
+			}
+			
+			// XOR with initialization vector
+			XORWithInitializationVector();
+			
+			// do the encrypt for 16 cycle
+			for(int i=0;i<16;i++){
+				//do the substitution with substitutionMatrix
+				substitutionEncrypt();
+
+				// shift the blocks of container16
+				slidingHorizontalEncrypt();
+				slidingVerticalEncrypt();
+			}
+			
+			// do XOR for container16 to end the encryption
+			XORContainer16ToEndEncrypt();
+			
+			binaryCipherText += getCipherText();
+			initializationVector = copyContainer16();
+		}
+		cipherText.append(bitToText(binaryCipherText));
+		System.out.println(cipherText);
+		plainText.setLength(0);
+	}
+	
+	public void decryptCBC(){
+		String[][] temp = new String[4][4];
+		makeInitializationVector(getSeed());
+		
+		first_idx = 0;
+		while(first_idx < binaryCipherText.length()){
+			setContainer16FromCipherText();
+			
+			// copy ciphertext block to temp
+			temp = copyContainer16();
+			
+			// do XOR for operation at the end of encryption
+			XORContainer16ToEndEncrypt();
+			
+			// do the decrypt for 16 cycle
+			for(int i=0;i<16;i++){
+				// shift the blocks of container16
+				slidingVerticalDecrypt();
+				slidingHorizontalDecrypt();
+				
+				//do the substitution with substitutionMatrix
+				substitutionDecrypt();
+			}
+			
+			// XOR with initialization vector
+			XORWithInitializationVector();
+			
+			// copy temp to initialization vector
+			for(int i=0;i<4;i++){
+				for(int j=0;j<4;j++){
+					initializationVector[i][j] = temp[i][j];
+				}
+			}
+				
+			barisToKolom();
+			if(first_idx == binaryCipherText.length()){
+				reversePosCnt16Pad();
+			} else {
+				reversePosCnt16();
+			}
+			System.out.println(plainText);
+		}
+	}
+	
+	public void encryptCFB(){
+		makeInitializationVector(getSeed());
+		
+		binary = convertToBinaryString(plainText);
+		last_idx = binary.length()-1;
+
+		// make substitution matrix
+		makeSBox(getSeed());
+		makeSubstitutionMatrix();
+		fixSubstitutionMatrix();
+
+		while (CFB_idx < binary.length()) {
+		// Encrypt here		
+			
+			// initialization: put IV to container16
+			for(int i=0;i<4;i++){
+				for(int j=0;j<4;j++){
+					container16[i][j] = initializationVector[i][j];
+				}
+			}
+			
+			// do the encrypt for 16 cycle
+			for(int i=0;i<16;i++){
+				//do the substitution with substitutionMatrix
+				substitutionEncrypt();
+
+				// shift the blocks of container16
+				slidingHorizontalEncrypt();
+				slidingVerticalEncrypt();
+			}
+			
+			// do XOR for container16 to end the encryption
+			XORContainer16ToEndEncrypt();
+			
+			// XOR IV processed with plain (part of CFB)
+			part2CFB("encrypt",container16,getPlainBlockForCFB());
+			
+			// get ciphertext from block
+			binaryCipherText += getCipherText();
+			
+			
+		}
+		cipherText.append(bitToText(binaryCipherText));
+		System.out.println(cipherText);
+		plainText.setLength(0);
+	}
+	
+	public void decryptCFB(){
+		makeInitializationVector(getSeed());
+		String[][] temp = new String[4][4];
+		
+		
+		System.out.println("mau masuk while");
+		
+		first_idx = 0;
+		while (first_idx < binaryCipherText.length()) {
+			setContainer16FromCipherText();
+			
+			// copy ciphertext block to temp
+			temp = copyContainer16();
+			
+			// initialization: put IV to container16
+			for(int i=0;i<4;i++){
+				for(int j=0;j<4;j++){
+					container16[i][j] = initializationVector[i][j];
+				}
+			}
+			
+			// do the decrypt for 16 cycle
+			for(int i=0;i<16;i++){
+				// shift the blocks of container16
+				slidingVerticalDecrypt();
+				slidingHorizontalDecrypt();
+				
+				//do the substitution with substitutionMatrix
+				substitutionDecrypt();
+			}
+			
+			part2CFB("decrypt",container16,temp);
+			
+			barisToKolom();
+			if(first_idx == binaryCipherText.length()){
+				reversePosCnt16Pad();
+			} else {
+				reversePosCnt16();
+			}
+			System.out.println(plainText);
+		}
+	}
+	
+	public String[][] getPlainBlockForCFB(){
+		String[][] plain = new String[4][4];
+		if (CFB_idx+127<binary.length()){
+			plain = set16block(plain);
+
+		} else {
+			plain = set16blockPadding(plain);
+		}
+		CFB_idx += 128;
+		return plain;
+	}
+	
+	public void part2CFB(String process, String[][] blockFromProcess, String[][] blockFromInput) {
+		StringBuilder temp = new StringBuilder();
+		StringBuilder elemen1 = new StringBuilder();
+		StringBuilder elemen2 = new StringBuilder();
+
+		// XOR plain with container16
+		int i = 0;
+		int j = 0;
+		while (i<4) {
+			if (j>3)
+				j=0;
+			while (j<4) {
+				elemen1.append(blockFromProcess[i][j]);
+				elemen2.append(blockFromInput[i][j]);
+				temp.append(XOR(elemen1, elemen2));
+				container16[i][j] = temp.toString();
+				elemen1.setLength(0);
+				elemen2.setLength(0);
+				temp.setLength(0);
+				j++;
+			}
+			i++;
+		}
+		
+		shiftToLeftIV();
+		
+		if(process.equals("encrypt")){
+			fillRightIV(container16);
+		} else {
+			fillRightIV(blockFromInput);
+		}
+	}
+
+	public void shiftToLeftIV() {
+		for (int i=0; i<4; i++) {
+			for (int j=0; j<2; j++) {
+				initializationVector[i][j] = initializationVector[i][j+2];
+			}
+		}
+	}
+
+	public void fillRightIV(String[][] target) {
+		for (int i=0; i<4; i++) {
+			for (int j=2; j<4; j++) {
+				initializationVector[i][j] = target[i][j-2];
+			}
+		}
+	}
+	
+	public void reversePosCnt16() {
+        // mengembalikan posisi elemen-elemen container16
+        // asumsi first_idx telah diset 0 dan last_idx telah diset sesuai panjang ciphertext
+            String cipher = ConvertToString();
+            int cnt = 0;
+            for (int i=0; i<cipher.length(); i++) {
+                if (cnt%2==0)
+                    plainText.insert(offset, cipher.charAt(cnt));
+                else {
+                    plainText.insert(offset+1, cipher.charAt(cnt));
+                    offset++;
+                }
+                cnt++;
+            }
+        }
+        
+        public void reversePosCnt16Pad() {
+            int i = 0;
+            int j = 0;
+            char temp;
+            while (i<4) {
+                if (j>3)
+                    j=0;
+                while (j<4) {
+                    if (!container16[i][j].equals("00000000")) {
+                        if (j%2==0) { // Jika bagian kolom genap (indeks j == 0 atau 2), isi dengan 8BitForward
+                            temp = (char) Integer.parseInt(container16[i][j],2);
+                            plainText.insert(offset, temp);
+                        }
+                        else {
+                            temp = (char) Integer.parseInt(container16[i][j],2);
+                            plainText.insert(offset+1, temp);
+                            offset++;
+                        }
+                    }
+                    j++;
+                }
+                i++;
+            }
+        }
 }

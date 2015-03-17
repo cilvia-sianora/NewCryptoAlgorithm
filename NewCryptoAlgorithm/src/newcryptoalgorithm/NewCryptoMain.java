@@ -17,47 +17,17 @@ public class NewCryptoMain {
 		NC.setKey("ABCDEFGHIJKLMNOP");
 		NC.plainText.append(text);
 		
-//                System.out.println("plaintext: "+NC.plainText.toString());
-                NC.encrypt();
-//		NC.binary = NC.convertToBinaryString(NC.plainText);
-//                NC.last_idx = NC.binary.length()-1;
-//		System.out.println(NC.binary);
-                
-//		List<String> distinctHex = new ArrayList<>();
-//		List<String> doubleHex = new ArrayList<>();
-//		
+		// ECB
+//		NC.encrypt();
+//		NC.decrypt();
+
+		// CBC
+//		NC.encryptCBC();
+//		NC.decryptCBC();
 		
-//		NC.makeSBox(30);
-//		NC.makeSubstitutionMatrix();
-//		NC.fixSubstitutionMatrix();
-//		
-//		int counterDistinctOri = 0;
-//		int counterDistinct1 = 0;
-//		StringBuilder temp = new StringBuilder();
-//		for(int i=0;i<16;i++){
-//			for(int j=0;j<16;j++){
-//				
-//				if(!distinctHex.contains(NC.getHex(NC.substitutionMatrix[i][j]).toString())){
-//						System.out.print(NC.getHex(NC.substitutionMatrix[i][j]) + " ");
-//					
-//					distinctHex.add(NC.getHex(NC.substitutionMatrix[i][j]).toString());
-//				} else {
-//						doubleHex.add(NC.getHex(NC.substitutionMatrix[i][j]).toString());
-//						System.out.print(NC.getHex(NC.substitutionMatrix[i][j]) + " ");
-//				}
-//			}
-//			System.out.println();
-//		}
-//		System.out.println("--EVALUATION--");
-//		System.out.println("-disctintHex-");
-//		System.out.println("size="+distinctHex.size());
-//		System.out.println("-doubleHex-");
-//		System.out.println("size="+doubleHex.size());
-//		for(String s: doubleHex){
-//			System.out.println(s);
-//		}
-				
-		
+		// CFB
+		NC.encryptCFB();		
+		NC.decryptCFB();
 		
 		
 	}
