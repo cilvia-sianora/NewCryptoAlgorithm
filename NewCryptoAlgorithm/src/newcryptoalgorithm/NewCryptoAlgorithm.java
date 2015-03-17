@@ -954,6 +954,7 @@ public class NewCryptoAlgorithm {
 	}
 	
 	public void encryptCFB(){
+		System.out.println("-Encrypt CFB-");
 		makeInitializationVector(getSeed());
 		
 		binary = convertToBinaryString(plainText);
@@ -993,7 +994,8 @@ public class NewCryptoAlgorithm {
 			// get ciphertext from block
 			binaryCipherText += getCipherText();
 			
-			
+			System.out.println("akhir iterasi");
+			printContainer16Manusiawi();
 		}
 		cipherText.append(bitToText(binaryCipherText));
 		System.out.println(cipherText);
@@ -1001,11 +1003,11 @@ public class NewCryptoAlgorithm {
 	}
 	
 	public void decryptCFB(){
+		System.out.println();
+		System.out.println("-Decrypt CFB-");
 		makeInitializationVector(getSeed());
 		String[][] temp = new String[4][4];
 		
-		
-		System.out.println("mau masuk while");
 		
 		first_idx = 0;
 		while (first_idx < binaryCipherText.length()) {
@@ -1021,19 +1023,24 @@ public class NewCryptoAlgorithm {
 				}
 			}
 			
-			// do the decrypt for 16 cycle
+			// do the encrypt for 16 cycle
 			for(int i=0;i<16;i++){
-				// shift the blocks of container16
-				slidingVerticalDecrypt();
-				slidingHorizontalDecrypt();
-				
 				//do the substitution with substitutionMatrix
-				substitutionDecrypt();
+				substitutionEncrypt();
+
+				// shift the blocks of container16
+				slidingHorizontalEncrypt();
+				slidingVerticalEncrypt();
 			}
+			
+			// do XOR for container16 to end the encryption
+			XORContainer16ToEndEncrypt();
 			
 			part2CFB("decrypt",container16,temp);
 			
-			barisToKolom();
+			System.out.println("akhir iterasi");
+			printContainer16Manusiawi();
+			
 			if(first_idx == binaryCipherText.length()){
 				reversePosCnt16Pad();
 			} else {
