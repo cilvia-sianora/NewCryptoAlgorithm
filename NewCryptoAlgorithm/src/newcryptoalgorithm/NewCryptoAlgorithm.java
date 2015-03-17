@@ -168,11 +168,25 @@ public class NewCryptoAlgorithm {
         }
     }
     
+    public String[][] copyContainer16() {
+        String[][] temp = new String[4][4];
+        int i =0 ,j=0;
+        while (i<4) {
+            if (j>3)
+                j=0;
+            while (j<4) {
+                temp[i][j] = container16[i][j];
+                j++;
+            }
+            i++;
+        }
+        return temp;
+    }
+    
     public void barisToKolom() {
     // Mengubah container16 baris-barisnya menjadi kolom
         
         String[][] temp = new String[4][4];
-        
         int i =0 ,j=0;
         while (i<4) {
             if (j>3)
@@ -183,7 +197,8 @@ public class NewCryptoAlgorithm {
             }
             i++;
         }
-        i = 0; j = 0;
+        
+        i =0; j=0;
         while (i<4) {
             if (j>3)
                 j=0;
@@ -488,6 +503,52 @@ public class NewCryptoAlgorithm {
             System.out.println("");
         }
         
+        public void slidingHorizontal() {
+        // Geser baris container16 secara horizontal
+            String[][] temp = new String[4][4];
+            temp = copyContainer16();
+            String temp_cont = new String();
+            
+            // Geser baris 1
+            container16[0][0] = temp[0][3];
+            for (int i=0; i<3; i++)
+                container16[0][i+1] = temp[0][i];
+            
+            // Geser baris 2
+            for (int i=0; i<2; i++)
+                container16[1][i] = temp[1][i+2];
+            for (int i=0; i<2; i++)
+                container16[1][i+2] = temp[1][i];
+            
+            // Geser baris 3
+            container16[2][3] = temp[2][0];
+            for (int i=1; i<=3; i++)
+                container16[2][i-1] = temp[2][i];
+        }
+        
+        public void slidingVertical() {
+        // Geser baris container16 secara vertical
+            String[][] temp = new String[4][4];
+            temp = copyContainer16();
+            String temp_cont = new String();
+            
+            // Geser baris 1
+            container16[0][0] = temp[3][0];
+            for (int i=0; i<3; i++)
+                container16[i+1][0] = temp[i][0];
+            
+            // Geser baris 2
+            for (int i=0; i<2; i++)
+                container16[i][1] = temp[i+2][1];
+            for (int i=0; i<2; i++)
+                container16[i+2][1] = temp[i][1];
+            
+            // Geser baris 3
+            container16[3][2] = temp[0][2];
+            for (int i=1; i<=3; i++)
+                container16[i-1][2] = temp[i][2];
+        }
+        
         public void encrypt() {
             binary = convertToBinaryString(plainText);
             last_idx = binary.length()-1;
@@ -512,6 +573,12 @@ public class NewCryptoAlgorithm {
                     printContainer16Manusiawi();
                     finished = true;
                 }
+                System.out.println("sliding Horizontal");
+                slidingHorizontal();
+                printContainer16Manusiawi();
+                System.out.println("sliding Vertical");
+                slidingVertical();
+                printContainer16Manusiawi();
             }
         }
         
