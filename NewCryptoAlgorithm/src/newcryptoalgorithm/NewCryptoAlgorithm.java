@@ -246,6 +246,17 @@ public class NewCryptoAlgorithm {
 	/** From Key Input to Substitution Matrix **/
 	
 	/**
+	 * Get an integer from key to be a seed
+	 * @return seed
+	 */
+	public int getSeed(){
+		int sum = 0;
+		for(int i=0;i<key.length();i++)
+			sum += (int) key.charAt(i);
+		return sum;
+	}
+	
+	/**
 	 * make S-BOX based on seed
 	 * @param seed parameter to random the integer
 	 */
@@ -482,107 +493,161 @@ public class NewCryptoAlgorithm {
 		}
 	}
         
-        public void printBinary() {
-            // Print binary
-            int idx = 0;
-            char temp;
-            String bin8;
-            bin8 = "";
-            for (int i=0; i<binary.length(); i++) {
-                for (int j=0; j<8; j++) {
-                    if (idx<binary.length()) {
-                        temp = binary.charAt(idx);
-                        idx++;
-                        bin8 = bin8 + temp;
-                    }
-                }
-                System.out.print(bin8);
-                System.out.print(" ");
-                bin8 = "";
-            }
-            System.out.println("");
-        }
-        
-        public void slidingHorizontal() {
-        // Geser baris container16 secara horizontal
-            String[][] temp = new String[4][4];
-            temp = copyContainer16();
-            String temp_cont = new String();
-            
-            // Geser baris 1
-            container16[0][0] = temp[0][3];
-            for (int i=0; i<3; i++)
-                container16[0][i+1] = temp[0][i];
-            
-            // Geser baris 2
-            for (int i=0; i<2; i++)
-                container16[1][i] = temp[1][i+2];
-            for (int i=0; i<2; i++)
-                container16[1][i+2] = temp[1][i];
-            
-            // Geser baris 3
-            container16[2][3] = temp[2][0];
-            for (int i=1; i<=3; i++)
-                container16[2][i-1] = temp[2][i];
-        }
-        
-        public void slidingVertical() {
-        // Geser baris container16 secara vertical
-            String[][] temp = new String[4][4];
-            temp = copyContainer16();
-            String temp_cont = new String();
-            
-            // Geser baris 1
-            container16[0][0] = temp[3][0];
-            for (int i=0; i<3; i++)
-                container16[i+1][0] = temp[i][0];
-            
-            // Geser baris 2
-            for (int i=0; i<2; i++)
-                container16[i][1] = temp[i+2][1];
-            for (int i=0; i<2; i++)
-                container16[i+2][1] = temp[i][1];
-            
-            // Geser baris 3
-            container16[3][2] = temp[0][2];
-            for (int i=1; i<=3; i++)
-                container16[i-1][2] = temp[i][2];
-        }
-        
-        public void encrypt() {
-            binary = convertToBinaryString(plainText);
-            last_idx = binary.length()-1;
-//            System.out.println("panjang binary: "+binary.length());
-//            System.out.println("first idx: "+first_idx);
-//            System.out.println("last idx: "+last_idx);
-            
-            boolean finished = false;
-            while (!finished) {
-            // Encrypt here
-                if (last_idx-first_idx>=127) {
-                // Pengelompokkan 16 blok normal
-                    set16block();
-                    barisToKolom();
-                    printContainer16Manusiawi();
-                }
-                else {
-                // Pengelompokkan 16 blok dengan padding jika jumlah blok tersisa tidak mencapai 16 blok
-                    System.out.println("Masuk Padding");
-                    set16blockPadding();
-                    barisToKolom();
-                    printContainer16Manusiawi();
-                    finished = true;
-                }
-                System.out.println("sliding Horizontal");
-                slidingHorizontal();
-                printContainer16Manusiawi();
-                System.out.println("sliding Vertical");
-                slidingVertical();
-                printContainer16Manusiawi();
-            }
-        }
-        
-        public void decrypt() {
-            
-        }
+	public void printBinary() {
+		// Print binary
+		int idx = 0;
+		char temp;
+		String bin8;
+		bin8 = "";
+		for (int i=0; i<binary.length(); i++) {
+			for (int j=0; j<8; j++) {
+				if (idx<binary.length()) {
+					temp = binary.charAt(idx);
+					idx++;
+					bin8 = bin8 + temp;
+				}
+			}
+			System.out.print(bin8);
+			System.out.print(" ");
+			bin8 = "";
+		}
+		System.out.println("");
+	}
+
+	public void slidingHorizontal() {
+	// Geser baris container16 secara horizontal
+		String[][] temp = new String[4][4];
+		temp = copyContainer16();
+		String temp_cont = new String();
+
+		// Geser baris 1
+		container16[0][0] = temp[0][3];
+		for (int i=0; i<3; i++)
+			container16[0][i+1] = temp[0][i];
+
+		// Geser baris 2
+		for (int i=0; i<2; i++)
+			container16[1][i] = temp[1][i+2];
+		for (int i=0; i<2; i++)
+			container16[1][i+2] = temp[1][i];
+
+		// Geser baris 3
+		container16[2][3] = temp[2][0];
+		for (int i=1; i<=3; i++)
+			container16[2][i-1] = temp[2][i];
+	}
+
+	public void slidingVertical() {
+	// Geser baris container16 secara vertical
+		String[][] temp = new String[4][4];
+		temp = copyContainer16();
+		String temp_cont = new String();
+
+		// Geser baris 1
+		container16[0][0] = temp[3][0];
+		for (int i=0; i<3; i++)
+			container16[i+1][0] = temp[i][0];
+
+		// Geser baris 2
+		for (int i=0; i<2; i++)
+			container16[i][1] = temp[i+2][1];
+		for (int i=0; i<2; i++)
+			container16[i+2][1] = temp[i][1];
+
+		// Geser baris 3
+		container16[3][2] = temp[0][2];
+		for (int i=1; i<=3; i++)
+			container16[i-1][2] = temp[i][2];
+	}
+	
+	public void substitution(){
+		int row, col;
+		for(int i=0;i<4;i++){
+			for(int j=0;j<4;j++){
+				row = Integer.parseInt(container16[i][j].substring(0,4),2);
+				col = Integer.parseInt(container16[i][j].substring(4),2);
+				container16[i][j] = substitutionMatrix[row][col].toString();
+			}
+		}
+	}
+
+	public void printContainer16InHex(){
+		StringBuilder temp = new StringBuilder();
+		for(int i=0;i<4;i++){
+			for(int j=0;j<4;j++){
+				temp.append(container16[i][j]);
+				System.out.print(getHex(temp) + "\t");
+				temp.setLength(0);
+			}
+			System.out.println("");
+		}
+	}
+	
+	public void printSubstitutionMatrixInHex(){
+		for(int i=0;i<16;i++){
+			for(int j=0;j<16;j++){
+				System.out.print(getHex(substitutionMatrix[i][j]) + " ");
+			}
+			System.out.println();
+		}
+	}
+	
+	public void XORContainer16ToEndEncrypt(){
+		StringBuilder temp = new StringBuilder();
+		int k = 0;
+		for(int i=0;i<4;i++){
+			for(int j=0;j<4;j++){
+				temp.append(container16[i][j]);
+				container16[i][j] = XOR(temp, substitutionMatrix[0][k]).toString();
+				k++;
+				temp.setLength(0);
+			}
+		}
+	}
+	
+	public void encrypt() {
+		binary = convertToBinaryString(plainText);
+		last_idx = binary.length()-1;
+
+		// make substitution matrix
+		makeSBox(getSeed());
+		makeSubstitutionMatrix();
+		fixSubstitutionMatrix();
+
+		boolean finished = false;
+		while (!finished) {
+		// Encrypt here
+			if (last_idx-first_idx>=127) {
+			// Pengelompokkan 16 blok normal
+				set16block();
+				barisToKolom();
+				printContainer16Manusiawi();
+			}
+			else {
+			// Pengelompokkan 16 blok dengan padding jika jumlah blok tersisa tidak mencapai 16 blok
+				System.out.println("Masuk Padding");
+				set16blockPadding();
+				barisToKolom();
+				printContainer16Manusiawi();
+				finished = true;
+			}
+			
+			// do the encrypt for 16 cycle
+			for(int i=0;i<16;i++){
+				//do the substitution with substitutionMatrix
+				substitution();
+
+				// shift the blocks of container16
+				slidingHorizontal();
+				slidingVertical();
+			}
+			
+			// do XOR for container16 to end the encryption
+			XORContainer16ToEndEncrypt();
+		}
+	}
+
+	public void decrypt() {
+
+	}
 }
