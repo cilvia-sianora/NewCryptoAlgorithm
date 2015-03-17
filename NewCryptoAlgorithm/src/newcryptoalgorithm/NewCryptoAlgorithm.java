@@ -225,14 +225,88 @@ public class NewCryptoAlgorithm {
 	public StringBuilder getHex(StringBuilder text){
 		StringBuilder temp = new StringBuilder();		
 		temp.append(Integer.toString(Integer.parseInt(text.toString(),2),16));
+		if(text.substring(0,4).equals("0000")){
+			temp.insert(0, '0');
+		}
 		return temp;
 	}
+	
 	
 	public void printArray(StringBuilder[] arr){
 		for(int i=0;i<SIZE;i++){
 			System.out.println(arr[i]);
 			System.out.println(getHex(arr[i]));
 		}
+	}
+	
+	public StringBuilder shiftBit(StringBuilder binaryStr, int digit){
+		StringBuilder result = new StringBuilder();
+//		if(digit % 2 == 0){
+			result.append(binaryStr.substring(digit,binaryStr.length()));
+			result.append(binaryStr.substring(0,digit));
+//		} else {
+//			result.append(binaryStr.substring(binaryStr.length()-digit));
+//			result.append(binaryStr.substring(0,binaryStr.length()-digit));
+//			
+//		}
+		return result;
+	}
+//	
+//	public StringBuilder[] putBinaryStringToArray(StringBuilder binaryStr){
+//		StringBuilder[] result = new StringBuilder[SIZE];
+//		for(int i=0;i<SIZE;i++){
+//			result[i] = new StringBuilder();
+//			result[i].append(binaryStr.substring(0,8));
+//			binaryStr.delete(0,8);
+//		}
+//		return result;
+//	}
+	
+	public StringBuilder getBinaryStringFromArray(StringBuilder[] arr){
+		StringBuilder result = new StringBuilder();
+		for(int i=0;i<SIZE;i++){
+			result.append(arr[i]);
+		}
+		return result;
+	}
+	
+	public StringBuilder negation(StringBuilder binaryStr, int digit, int iteration){
+		StringBuilder result = new StringBuilder();
+		if(digit>8){
+			digit -= 8;
+		}
+		if(iteration % 2 == 0){ // even iteration
+			for(int i=0;i<digit;i++){
+				if(binaryStr.charAt(i) == '0'){
+					result.append('1');
+				} else {
+					result.append('0');
+				}
+			}
+			result.append(binaryStr.substring(digit));
+		} else { //odd iteration
+			for(int i=digit-1;i>=0;i--){
+				if(binaryStr.charAt(i) == '0'){
+					result.append('1');
+				} else {
+					result.append('0');
+				}
+			}
+			result.append(binaryStr.substring(digit));
+		}
+		return result;
+	}
+	
+	public StringBuilder add(StringBuilder binaryStr, int adder){
+		StringBuilder result = new StringBuilder();
+		int sum = Integer.parseInt(binaryStr.toString(), 2) + adder;
+		if(sum > 255)
+			sum -= 256;
+		result.append(Integer.toBinaryString(sum));
+		while (result.length() < 8){
+			result.insert(0,'0');
+		}
+		return result;
 	}
 	
 	/**
@@ -259,48 +333,23 @@ public class NewCryptoAlgorithm {
 			binaryKey.delete(0,8);
 		}
 		
-//		printArray(k);
-
-//		int i = 0;
 		for(int i=0;i<SIZE;i++){
 			// do the inisialization and assignment
 			if(i>0){ // after the first iteration
-//				System.out.println("-- Iteration "+ i +"--");
-//				
-//				System.out.println("- ka before goes to for -");
-//				printArray(ka);
-//				
-//				System.out.println("- ka before goes to for, but without printArray -");
-//				for(int j=0;j<SIZE;j++){
-//					System.out.println(ka[j]);
-//					System.out.println(getHex(ka[j]));
-//				}
-				
-//				System.out.println("- ka inside for, at the very first of iteration before k.setLength(0) -");
-//				System.out.println("- ka inside the first for -");
 				for(int j=0;j<SIZE;j++){
-//					System.out.println(ka[j]);
-//					System.out.println(getHex(ka[j]));
-				//	k[j].setLength(0);
-					k[j].replace(0,8,substitutionMatrix[i-1][j].toString());
 					kBefore[j].replace(0,8,ka[j].toString());
 					ka[j].setLength(0);
-				//	kBefore[j].setLength(0);
-				//	ka[j] = new StringBuilder();
 				}
-//				for(int j=0;j<SIZE;j++){
-//					kBefore[j].replace(0,8,ka[j].toString());
-//				}
-//				System.out.println("- k get from substitutionMatrix -");
-//				printArray(k);
-//				System.out.println("- kBefore get from ka -");
-//				printArray(kBefore);
-//				for(int j=0;j<SIZE;j++){
-//					ka[j].setLength(0);
-//				}
+				StringBuilder temp = new StringBuilder();
+				temp.append(getBinaryStringFromArray(substitutionMatrix[i-1]));
+				temp.replace(0,temp.length(),shiftBit(temp,i).toString());
+				for(int j=0;j<SIZE;j++){
+					k[j].setLength(0);
+					k[j].append(temp.substring(0,8));
+					temp.delete(0,8);
+				}
 				
 			} else if (i == 0){ // for the first iteration
-//				System.out.println("--First Iteration--");
 				for(int j=0;j<SIZE;j++){
 					kBefore[j].append(k[j]);
 				}
@@ -311,24 +360,32 @@ public class NewCryptoAlgorithm {
 				ka[j].setLength(0);
 				ka[j].append(permutation(k)[j]);
 			}
-			
-//			printArray(k);
-//			System.out.println("- After permutation: ka -");
-//			printArray(ka);
-//			
-//			System.out.println("- Result XO ka&k -");
-			
+						
 			// XOR and put to matrix
 			for(int j=0;j<SIZE;j++){
-//				System.out.println(XOR(kBefore[j],ka[j]));
-//				System.out.println(getHex(XOR(kBefore[j],ka[j])));
 				substitutionMatrix[i][j].append(XOR(kBefore[j],ka[j]));
-//				k[j].replace(0,8,substitutionMatrix[i][j].toString());
-			}	
+				}	
 			
-//			System.out.println("- Result XO ka&k and put to matrix -");
-//			printArray(substitutionMatrix[i]);
 		}
+	}
+	
+	public void fixSubstitutionMatrix(){
+		List<String> distinctBinary = new ArrayList<>();
+		StringBuilder temp = new StringBuilder();
 		
+		for(int i=0;i<SIZE;i++){
+			for(int j=0;j<SIZE;j++){
+				temp.append(substitutionMatrix[i][j]);
+//				System.out.println(temp);
+				if(distinctBinary.contains(temp.toString())){
+					do{
+						temp.replace(0,8,add(temp,1).toString());
+					}while(distinctBinary.contains(temp.toString()));
+					substitutionMatrix[i][j].replace(0,8,temp.toString());
+				}
+				distinctBinary.add(temp.toString());
+				temp.setLength(0);
+			}
+		}
 	}
 }
